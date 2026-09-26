@@ -20,8 +20,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.abs
-import kotlin.math.exp
 
 @Composable
 fun AlphabetBar(
@@ -30,69 +28,56 @@ fun AlphabetBar(
     onDragStarted: () -> Unit = {},
     onDragEnded: () -> Unit = {}
 ) {
-    val alphabet = ('A'..'Z').toList()
-    val allItems = listOf("☆") + alphabet.map { it.toString() } + listOf("•")
-    
-    var barHeight by remember { mutableFloatStateOf(0f) }
-    var touchY by remember { mutableFloatStateOf(0f) }
-    var isDragging by remember { mutableStateOf(false) }
-
-    var lastHapticChar by remember { mutableStateOf(' ') }
     val view = androidx.compose.ui.platform.LocalView.current
+    val density = LocalDensity.current
+    
+    val maxOffsetPx = with(density) { 90.dp.toPx() }
+    val bulgeRadiusPx = with(density) { 160.dp.toPx() }
 
-    // Animate the amplitude of the bulge to spring back smoothly without moving up the screen
+    val state = rememberAlphabetBarState(
+        maxOffsetPx = maxOffsetPx,
+        bulgeRadiusPx = bulgeRadiusPx,
+        view = view,
+        onLetterSelected = onLetterSelected,
+        onDragStarted = onDragStarted,
+        onDragEnded = onDragEnded
+    )
+
+
     val bulgeAmplitude by animateFloatAsState(
-        targetValue = if (isDragging) 1f else 0f,
+        targetValue = if (state.isDragging) 1f else 0f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
         label = "bulgeAmplitude"
     )
 
-    // Density to convert dp to px
-    val density = LocalDensity.current
-    val maxOffsetPx = with(density) { 80.dp.toPx() } // How far left the letters bulge
-    val bulgeRadiusPx = with(density) { 120.dp.toPx() } // How wide the bulge is vertically
+
+    val animatedTouchY by animateFloatAsState(
+        targetValue = state.touchY,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium),
+        label = "animatedTouchY"
+    )
 
     Box(
         modifier = modifier
             .fillMaxHeight(0.70f)
             .width(40.dp) 
-            .onSizeChanged { barHeight = it.height.toFloat() }
+            .onSizeChanged { state.barHeight = it.height.toFloat() }
             .pointerInput(Unit) {
                 awaitEachGesture {
                     val down = awaitFirstDown()
                     down.consume()
-                    isDragging = true
-                    touchY = down.position.y
-                    onDragStarted()
+                    state.startDrag(down.position.y)
 
                     do {
                         val event = awaitPointerEvent()
                         val pointer = event.changes.firstOrNull()
                         if (pointer != null) {
                             pointer.consume()
-                            touchY = pointer.position.y
-                            
-                            // Determine which letter is selected
-                            if (barHeight > 0) {
-                                val itemHeight = barHeight / allItems.size
-                                val index = (touchY / itemHeight).toInt().coerceIn(0, allItems.lastIndex)
-                                val selectedText = allItems[index]
-                                if (selectedText.length == 1) {
-                                    val char = selectedText[0]
-                                    if (char.isLetter() || char == '☆' || char == '•') {
-                                        if (char != lastHapticChar) {
-                                            lastHapticChar = char
-                                            view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
-                                        }
-                                        onLetterSelected(char)
-                                    }
-                                }
-                            }
+                            state.processTouch(pointer.position.y)
                         }
                     } while (event.changes.any { it.pressed })
 
-                    isDragging = false
-                    onDragEnded()
+                    state.endDrag()
                 }
             }
     ) {
@@ -101,20 +86,11 @@ fun AlphabetBar(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            allItems.forEachIndexed { index, item ->
-                // Calculate distance from touch point
-                val itemY = if (barHeight > 0) (index + 0.5f) * (barHeight / allItems.size) else 0f
-                
-                // Calculate Gaussian curve offset
-                val distance = abs(touchY - itemY)
-                val offset = if (distance < bulgeRadiusPx) {
-                    -maxOffsetPx * bulgeAmplitude * exp(-(distance * distance) / (2 * (bulgeRadiusPx / 2) * (bulgeRadiusPx / 2)))
-                } else {
-                    0f
-                }
-                
-                // Size increases slightly at the peak of the curve
-                val scale = 1f + (abs(offset) / maxOffsetPx) * 0.5f
+            state.allItems.forEachIndexed { index, item ->
+                val itemY = state.getItemY(index)
+                val offsetX = state.getOffset(itemY, bulgeAmplitude, animatedTouchY)
+                val offsetY = state.getOffsetY(itemY, bulgeAmplitude, animatedTouchY)
+                val scale = state.getScale(offsetX)
 
                 Box(
                     modifier = Modifier
@@ -124,12 +100,13 @@ fun AlphabetBar(
                 ) {
                     Text(
                         text = item,
-                        fontSize = 11.sp,
+                        fontSize = 14.sp,
                         fontWeight = if (item.length == 1 && item[0].isLetter()) FontWeight.Bold else FontWeight.Normal,
                         color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier
                             .graphicsLayer {
-                                translationX = offset
+                                translationX = offsetX
+                                translationY = offsetY
                                 scaleX = scale
                                 scaleY = scale
                             }
@@ -139,37 +116,34 @@ fun AlphabetBar(
             }
         }
 
-        // Floating Letter Bubble (tracks the finger)
-        if (isDragging && barHeight > 0) {
-            val itemHeight = barHeight / allItems.size
-            val index = (touchY / itemHeight).toInt().coerceIn(0, allItems.lastIndex)
-            val selectedText = allItems[index]
+        // Floating Letter Bubble
+        if (state.isDragging && state.barHeight > 0) {
+            val index = state.getSelectedIndex()
+            val selectedText = state.allItems[index]
             
             if (selectedText.length == 1 && (selectedText[0].isLetter() || selectedText[0] == '☆' || selectedText[0] == '•')) {
-                val bubbleSize = 56.dp
+                val bubbleSize = 72.dp
                 val bubbleSizePx = with(density) { bubbleSize.toPx() }
                 
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .graphicsLayer {
-                            // Center the bubble on the Y axis of the finger
-                            translationY = touchY - (bubbleSizePx / 2)
-                            // Push it left of the bulge (maxOffset + extra padding)
-                            translationX = -maxOffsetPx - with(density) { 32.dp.toPx() }
+                            translationY = animatedTouchY - (bubbleSizePx / 2)
+                            translationX = -maxOffsetPx - with(density) { 64.dp.toPx() }
                         }
-                        .size(bubbleSize)
+                        .requiredSize(bubbleSize)
                         .background(
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
                             shape = CircleShape
                         ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = selectedText,
-                        fontSize = 28.sp,
+                        fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

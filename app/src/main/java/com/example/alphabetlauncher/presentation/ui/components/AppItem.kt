@@ -33,11 +33,8 @@ fun AppItem(
             .padding(vertical = 12.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Convert Drawable to Bitmap for Compose
-        val bitmap = app.icon.toBitmap().asImageBitmap()
-        
         Image(
-            bitmap = bitmap,
+            bitmap = app.imageBitmap,
             contentDescription = app.label,
             modifier = Modifier.size(48.dp)
         )

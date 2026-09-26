@@ -8,6 +8,8 @@ import com.example.alphabetlauncher.domain.model.AppInfo
 import com.example.alphabetlauncher.domain.repository.AppRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 
 class AppRepositoryImpl(private val context: Context) : AppRepository {
 
@@ -55,11 +57,15 @@ class AppRepositoryImpl(private val context: Context) : AppRepository {
 
             val label = resolveInfo.loadLabel(pm).toString()
             val icon = resolveInfo.loadIcon(pm)
+            
+            // Pre-calculate bitmap on background thread to prevent UI stutter
+            val imageBitmap = icon.toBitmap().asImageBitmap()
 
             AppInfo(
                 label = label,
                 packageName = packageName,
-                icon = icon
+                icon = icon,
+                imageBitmap = imageBitmap
             )
         }.sortedBy { it.label.lowercase() }
 
