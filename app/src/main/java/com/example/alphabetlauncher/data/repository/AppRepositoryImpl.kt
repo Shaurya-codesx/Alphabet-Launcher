@@ -13,6 +13,29 @@ class AppRepositoryImpl(private val context: Context) : AppRepository {
 
     // Cache the list in memory
     private var cachedApps: List<AppInfo>? = null
+    private val prefs = context.getSharedPreferences("launcher_prefs", Context.MODE_PRIVATE)
+
+    override fun isFavoritesInitialized(): Boolean {
+        return prefs.getBoolean("fav_init", false)
+    }
+
+    override fun getFavoritePackages(): Set<String> {
+        return prefs.getStringSet("favorites", emptySet()) ?: emptySet()
+    }
+
+    override fun setFavoritePackages(packages: Set<String>) {
+        prefs.edit().putStringSet("favorites", packages).putBoolean("fav_init", true).apply()
+    }
+
+    override fun toggleFavorite(packageName: String) {
+        val current = getFavoritePackages().toMutableSet()
+        if (current.contains(packageName)) {
+            current.remove(packageName)
+        } else {
+            current.add(packageName)
+        }
+        setFavoritePackages(current)
+    }
 
     override suspend fun getInstalledApps(): List<AppInfo> = withContext(Dispatchers.IO) {
         cachedApps?.let { return@withContext it }

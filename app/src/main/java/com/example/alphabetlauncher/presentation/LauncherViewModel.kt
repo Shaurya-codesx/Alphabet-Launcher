@@ -27,15 +27,31 @@ class LauncherViewModel @Inject constructor(
     private fun loadApps() {
         viewModelScope.launch {
             val apps = appRepository.getInstalledApps()
-            val favorites = apps.take(5)
             
-            _state.update { 
-                it.copy(
-                    allApps = apps,
-                    favorites = favorites
-                ) 
+            // Check if favorites are initialized
+            if (!appRepository.isFavoritesInitialized()) {
+                val initialFavs = apps.take(5).map { it.packageName }.toSet()
+                appRepository.setFavoritePackages(initialFavs)
             }
+            
+            refreshFavorites(apps)
         }
+    }
+
+    private fun refreshFavorites(apps: List<AppInfo> = _state.value.allApps) {
+        val favPackages = appRepository.getFavoritePackages()
+        val favorites = apps.filter { it.packageName in favPackages }
+        _state.update { 
+            it.copy(
+                allApps = apps,
+                favorites = favorites
+            ) 
+        }
+    }
+
+    fun toggleFavorite(packageName: String) {
+        appRepository.toggleFavorite(packageName)
+        refreshFavorites()
     }
 
     fun onDragStarted() {

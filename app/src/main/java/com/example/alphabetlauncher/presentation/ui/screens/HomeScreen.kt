@@ -74,6 +74,9 @@ fun HomeScreen(
                                 onClick = {
                                     val intent = context.packageManager.getLaunchIntentForPackage(app.packageName)
                                     intent?.let { context.startActivity(it) }
+                                },
+                                onLongClick = {
+                                    viewModel.toggleFavorite(app.packageName)
                                 }
                             )
                         }
@@ -132,6 +135,7 @@ fun HomeScreen(
                 SearchScreen(
                     state = state,
                     onQueryChanged = viewModel::onSearchQueryChanged,
+                    onToggleFavorite = viewModel::toggleFavorite,
                     onClose = viewModel::closeSearch
                 )
             }

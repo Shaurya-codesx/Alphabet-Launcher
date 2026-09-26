@@ -25,6 +25,7 @@ import com.example.alphabetlauncher.presentation.ui.components.AppItem
 fun SearchScreen(
     state: LauncherState,
     onQueryChanged: (String) -> Unit,
+    onToggleFavorite: (String) -> Unit,
     onClose: () -> Unit
 ) {
     val context = LocalContext.current
@@ -53,7 +54,7 @@ fun SearchScreen(
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
-                onSearch = { /* Optionally handle enter key */ }
+                onSearch = {}
             ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -73,6 +74,9 @@ fun SearchScreen(
                         val intent = context.packageManager.getLaunchIntentForPackage(app.packageName)
                         intent?.let { context.startActivity(it) }
                         onClose()
+                    },
+                    onLongClick = {
+                        onToggleFavorite(app.packageName)
                     }
                 )
             }
