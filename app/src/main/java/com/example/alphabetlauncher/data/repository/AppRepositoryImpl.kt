@@ -69,7 +69,25 @@ class AppRepositoryImpl(private val context: Context) : AppRepository {
             )
         }.sortedBy { it.label.lowercase() }
 
-        cachedApps = apps
-        return@withContext apps
+        // Inject Launcher Settings app
+        val settingsIcon = context.getDrawable(android.R.drawable.ic_menu_preferences) ?: context.getDrawable(android.R.drawable.sym_def_app_icon)!!
+        val settingsApp = AppInfo(
+            label = "Launcher Settings",
+            packageName = "com.example.alphabetlauncher.SETTINGS",
+            icon = settingsIcon,
+            imageBitmap = settingsIcon.toBitmap().asImageBitmap()
+        )
+
+        val finalApps = (apps + settingsApp).sortedBy { it.label.lowercase() }
+        cachedApps = finalApps
+        return@withContext finalApps
+    }
+
+    override fun isLeftHandedMode(): Boolean {
+        return prefs.getBoolean("left_handed_mode", false)
+    }
+
+    override fun setLeftHandedMode(enabled: Boolean) {
+        prefs.edit().putBoolean("left_handed_mode", enabled).apply()
     }
 }

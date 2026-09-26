@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -32,14 +34,17 @@ fun ClockWidget(modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         Text(
             text = timeString,
-            fontSize = 64.sp,
+            fontSize = 80.sp,
             fontWeight = FontWeight.Light,
+            letterSpacing = (-2).sp,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
             text = dateString,
             fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 8.dp)
         )
     }
 }

@@ -21,13 +21,14 @@ class AlphabetBarState(
 
     val allItems = listOf("☆") + ('A'..'Z').map { it.toString() } + listOf("•")
 
-    fun getOffset(itemY: Float, bulgeAmplitude: Float, animatedTouchY: Float): Float {
+    fun getOffset(itemY: Float, bulgeAmplitude: Float, animatedTouchY: Float, isLeftHanded: Boolean): Float {
         val distance = abs(animatedTouchY - itemY)
         return if (distance < bulgeRadiusPx) {
             val ratio = distance / bulgeRadiusPx
             val curve = kotlin.math.cos(ratio * (Math.PI / 2)).toFloat()
             val smoothedCurve = Math.pow(curve.toDouble(), 1.2).toFloat()
-            -maxOffsetPx * bulgeAmplitude * smoothedCurve
+            val rawOffset = maxOffsetPx * bulgeAmplitude * smoothedCurve
+            if (isLeftHanded) rawOffset else -rawOffset
         } else {
             0f
         }

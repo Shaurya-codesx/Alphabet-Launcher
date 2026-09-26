@@ -21,7 +21,8 @@ fun AppItem(
     app: AppInfo,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isLeftHanded: Boolean = false
 ) {
     Row(
         modifier = modifier
@@ -30,21 +31,38 @@ fun AppItem(
                 onClick = onClick,
                 onLongClick = onLongClick
             )
-            .padding(vertical = 12.dp, horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 16.dp, horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = if (isLeftHanded) Arrangement.End else Arrangement.Start
     ) {
-        Image(
-            bitmap = app.imageBitmap,
-            contentDescription = app.label,
-            modifier = Modifier.size(48.dp)
-        )
-        
-        Spacer(modifier = Modifier.width(16.dp))
-        
-        Text(
-            text = app.label,
-            fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        if (isLeftHanded) {
+            Text(
+                text = app.label,
+                fontSize = 16.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                letterSpacing = 0.5.sp,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f)
+            )
+            Spacer(modifier = Modifier.width(20.dp))
+            Image(
+                bitmap = app.imageBitmap,
+                contentDescription = app.label,
+                modifier = Modifier.size(42.dp)
+            )
+        } else {
+            Image(
+                bitmap = app.imageBitmap,
+                contentDescription = app.label,
+                modifier = Modifier.size(42.dp)
+            )
+            Spacer(modifier = Modifier.width(20.dp))
+            Text(
+                text = app.label,
+                fontSize = 16.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                letterSpacing = 0.5.sp,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f)
+            )
+        }
     }
 }

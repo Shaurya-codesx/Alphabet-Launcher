@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun AlphabetBar(
+    isLeftHanded: Boolean = false,
     modifier: Modifier = Modifier,
     onLetterSelected: (Char) -> Unit = {},
     onDragStarted: () -> Unit = {},
@@ -88,7 +89,7 @@ fun AlphabetBar(
         ) {
             state.allItems.forEachIndexed { index, item ->
                 val itemY = state.getItemY(index)
-                val offsetX = state.getOffset(itemY, bulgeAmplitude, animatedTouchY)
+                val offsetX = state.getOffset(itemY, bulgeAmplitude, animatedTouchY, isLeftHanded)
                 val offsetY = state.getOffsetY(itemY, bulgeAmplitude, animatedTouchY)
                 val scale = state.getScale(offsetX)
 
@@ -96,13 +97,14 @@ fun AlphabetBar(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth(),
-                    contentAlignment = Alignment.CenterEnd
+                    contentAlignment = if (isLeftHanded) Alignment.CenterStart else Alignment.CenterEnd
                 ) {
+                    val isSelected = state.isDragging && index == state.getSelectedIndex()
                     Text(
                         text = item,
                         fontSize = 14.sp,
                         fontWeight = if (item.length == 1 && item[0].isLetter()) FontWeight.Bold else FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                         modifier = Modifier
                             .graphicsLayer {
                                 translationX = offsetX
@@ -110,7 +112,7 @@ fun AlphabetBar(
                                 scaleX = scale
                                 scaleY = scale
                             }
-                            .padding(end = 12.dp)
+                            .padding(start = if (isLeftHanded) 12.dp else 0.dp, end = if (isLeftHanded) 0.dp else 12.dp)
                     )
                 }
             }
@@ -127,10 +129,10 @@ fun AlphabetBar(
                 
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
+                        .align(if (isLeftHanded) Alignment.TopStart else Alignment.TopEnd)
                         .graphicsLayer {
                             translationY = animatedTouchY - (bubbleSizePx / 2)
-                            translationX = -maxOffsetPx - with(density) { 64.dp.toPx() }
+                            translationX = if (isLeftHanded) maxOffsetPx + with(density) { 64.dp.toPx() } else -maxOffsetPx - with(density) { 64.dp.toPx() }
                         }
                         .requiredSize(bubbleSize)
                         .background(

@@ -8,4 +8,6 @@ interface AppRepository {
     fun getFavoritePackages(): Set<String>
     fun setFavoritePackages(packages: Set<String>)
     fun toggleFavorite(packageName: String)
+    fun isLeftHandedMode(): Boolean
+    fun setLeftHandedMode(enabled: Boolean)
 }

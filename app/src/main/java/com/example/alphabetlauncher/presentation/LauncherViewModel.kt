@@ -44,8 +44,29 @@ class LauncherViewModel @Inject constructor(
         _state.update { 
             it.copy(
                 allApps = apps,
-                favorites = favorites
+                favorites = favorites,
+                isLeftHandedMode = appRepository.isLeftHandedMode()
             ) 
+        }
+    }
+
+    fun toggleLeftHandedMode(enabled: Boolean) {
+        appRepository.setLeftHandedMode(enabled)
+        _state.update { it.copy(isLeftHandedMode = enabled) }
+    }
+
+    fun closeSettings() {
+        _state.update { it.copy(isSettingsVisible = false) }
+    }
+
+    fun onAppClicked(packageName: String, context: android.content.Context) {
+        if (packageName == "com.example.alphabetlauncher.SETTINGS") {
+            _state.update { it.copy(isSettingsVisible = true) }
+        } else {
+            val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+            if (intent != null) {
+                context.startActivity(intent)
+            }
         }
     }
 
