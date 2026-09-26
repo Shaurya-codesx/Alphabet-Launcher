@@ -2,7 +2,9 @@
 
 A highly optimized, minimal, and premium Android Launcher built entirely with Jetpack Compose and Clean Architecture. Designed to be fast, beautiful, and accessible.
 
-🎥 **[Watch the Demo Video on YouTube](https://youtube.com/shorts/9VlcYtM-LFw?feature=share)**
+[![Alphabet Launcher Demo Video](https://img.youtube.com/vi/9VlcYtM-LFw/0.jpg)](https://youtube.com/shorts/9VlcYtM-LFw?feature=share)
+
+*Click the image above to watch the demo video on YouTube!*
 
 ## 🌟 Core Features
 
