@@ -37,6 +37,9 @@ fun AlphabetBar(
     var touchY by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
 
+    var lastHapticChar by remember { mutableStateOf(' ') }
+    val view = androidx.compose.ui.platform.LocalView.current
+
     // Animate the amplitude of the bulge to spring back smoothly without moving up the screen
     val bulgeAmplitude by animateFloatAsState(
         targetValue = if (isDragging) 1f else 0f,
@@ -75,6 +78,10 @@ fun AlphabetBar(
                                 if (selectedText.length == 1) {
                                     val char = selectedText[0]
                                     if (char.isLetter() || char == '☆' || char == '•') {
+                                        if (char != lastHapticChar) {
+                                            lastHapticChar = char
+                                            view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
+                                        }
                                         onLetterSelected(char)
                                     }
                                 }
