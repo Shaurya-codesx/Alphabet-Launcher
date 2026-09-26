@@ -59,6 +59,30 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    fun onSearchSwipeUp() {
+        _state.update { it.copy(isSearchVisible = true, selectedLetter = null, filteredApps = emptyList()) }
+    }
+
+    fun closeSearch() {
+        _state.update { it.copy(isSearchVisible = false, searchQuery = "", filteredApps = emptyList()) }
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        val filtered = if (query.isBlank()) {
+            emptyList()
+        } else {
+            _state.value.allApps.filter { app ->
+                app.label.contains(query, ignoreCase = true)
+            }
+        }
+        _state.update { 
+            it.copy(
+                searchQuery = query,
+                filteredApps = filtered
+            ) 
+        }
+    }
+
     fun onLetterSelected(letter: Char) {
         if (letter == '☆' || letter == '•') {
             clearSelection()

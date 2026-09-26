@@ -60,6 +60,7 @@ fun AlphabetBar(
             .pointerInput(Unit) {
                 awaitEachGesture {
                     val down = awaitFirstDown()
+                    down.consume()
                     isDragging = true
                     touchY = down.position.y
                     onDragStarted()
@@ -68,6 +69,7 @@ fun AlphabetBar(
                         val event = awaitPointerEvent()
                         val pointer = event.changes.firstOrNull()
                         if (pointer != null) {
+                            pointer.consume()
                             touchY = pointer.position.y
                             
                             // Determine which letter is selected

@@ -14,6 +14,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.alphabetlauncher.presentation.LauncherViewModel
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import com.example.alphabetlauncher.presentation.ui.components.AlphabetBar
 import com.example.alphabetlauncher.presentation.ui.components.AppItem
 import com.example.alphabetlauncher.presentation.ui.components.ClockWidget
@@ -35,7 +40,17 @@ fun HomeScreen(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures { _, dragAmount ->
+                        if (dragAmount < -20) {
+                            viewModel.onSearchSwipeUp()
+                        }
+                    }
+                }
+        ) {
             // Left side content
             Column(
                 modifier = Modifier
@@ -108,6 +123,18 @@ fun HomeScreen(
                 onDragEnded = viewModel::onDragEnded,
                 onLetterSelected = viewModel::onLetterSelected
             )
+
+            AnimatedVisibility(
+                visible = state.isSearchVisible,
+                enter = slideInVertically(initialOffsetY = { it }),
+                exit = slideOutVertically(targetOffsetY = { it })
+            ) {
+                SearchScreen(
+                    state = state,
+                    onQueryChanged = viewModel::onSearchQueryChanged,
+                    onClose = viewModel::closeSearch
+                )
+            }
         }
     }
 }

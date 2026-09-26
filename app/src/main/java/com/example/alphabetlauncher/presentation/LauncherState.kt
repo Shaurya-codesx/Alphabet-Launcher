@@ -7,5 +7,7 @@ data class LauncherState(
     val isDragging: Boolean = false,
     val selectedLetter: Char? = null,
     val filteredApps: List<AppInfo> = emptyList(),
-    val favorites: List<AppInfo> = emptyList()
+    val favorites: List<AppInfo> = emptyList(),
+    val isSearchVisible: Boolean = false,
+    val searchQuery: String = ""
 )
