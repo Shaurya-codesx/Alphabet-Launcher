@@ -22,28 +22,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             AlphabetLauncherTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    com.example.alphabetlauncher.presentation.ui.screens.HomeScreen()
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AlphabetLauncherTheme {
-        Greeting("Android")
     }
 }
