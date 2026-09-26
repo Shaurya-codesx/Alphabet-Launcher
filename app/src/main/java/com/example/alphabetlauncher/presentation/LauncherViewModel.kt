@@ -27,7 +27,6 @@ class LauncherViewModel @Inject constructor(
     private fun loadApps() {
         viewModelScope.launch {
             val apps = appRepository.getInstalledApps()
-            // Set first 5 apps as favorites for now (requirement 1)
             val favorites = apps.take(5)
             
             _state.update { 
