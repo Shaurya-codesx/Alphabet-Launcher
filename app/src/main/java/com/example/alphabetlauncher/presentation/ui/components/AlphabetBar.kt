@@ -34,14 +34,14 @@ fun AlphabetBar(
     val allItems = listOf("☆") + alphabet.map { it.toString() } + listOf("•")
     
     var barHeight by remember { mutableFloatStateOf(0f) }
-    var touchY by remember { mutableFloatStateOf(-1f) }
+    var touchY by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
 
-
-    val animatedTouchY by animateFloatAsState(
-        targetValue = if (isDragging) touchY else -1f,
+    // Animate the amplitude of the bulge to spring back smoothly without moving up the screen
+    val bulgeAmplitude by animateFloatAsState(
+        targetValue = if (isDragging) 1f else 0f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-        label = "touchY"
+        label = "bulgeAmplitude"
     )
 
     // Density to convert dp to px
@@ -72,8 +72,11 @@ fun AlphabetBar(
                                 val itemHeight = barHeight / allItems.size
                                 val index = (touchY / itemHeight).toInt().coerceIn(0, allItems.lastIndex)
                                 val selectedText = allItems[index]
-                                if (selectedText.length == 1 && selectedText[0].isLetter()) {
-                                    onLetterSelected(selectedText[0])
+                                if (selectedText.length == 1) {
+                                    val char = selectedText[0]
+                                    if (char.isLetter() || char == '☆' || char == '•') {
+                                        onLetterSelected(char)
+                                    }
                                 }
                             }
                         }
@@ -94,9 +97,9 @@ fun AlphabetBar(
                 val itemY = if (barHeight > 0) (index + 0.5f) * (barHeight / allItems.size) else 0f
                 
                 // Calculate Gaussian curve offset
-                val distance = if (isDragging) abs(touchY - itemY) else if (animatedTouchY >= 0) abs(animatedTouchY - itemY) else 9999f
+                val distance = abs(touchY - itemY)
                 val offset = if (distance < bulgeRadiusPx) {
-                    -maxOffsetPx * exp(-(distance * distance) / (2 * (bulgeRadiusPx / 2) * (bulgeRadiusPx / 2)))
+                    -maxOffsetPx * bulgeAmplitude * exp(-(distance * distance) / (2 * (bulgeRadiusPx / 2) * (bulgeRadiusPx / 2)))
                 } else {
                     0f
                 }
@@ -133,7 +136,7 @@ fun AlphabetBar(
             val index = (touchY / itemHeight).toInt().coerceIn(0, allItems.lastIndex)
             val selectedText = allItems[index]
             
-            if (selectedText.length == 1 && selectedText[0].isLetter()) {
+            if (selectedText.length == 1 && (selectedText[0].isLetter() || selectedText[0] == '☆' || selectedText[0] == '•')) {
                 val bubbleSize = 56.dp
                 val bubbleSizePx = with(density) { bubbleSize.toPx() }
                 

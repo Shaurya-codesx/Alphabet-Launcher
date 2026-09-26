@@ -60,6 +60,10 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun onLetterSelected(letter: Char) {
+        if (letter == '☆' || letter == '•') {
+            clearSelection()
+            return
+        }
         if (_state.value.selectedLetter == letter) return
         
         val filtered = _state.value.allApps.filter { app ->
