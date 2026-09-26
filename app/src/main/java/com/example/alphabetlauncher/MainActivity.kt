@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.alphabetlauncher.presentation.ui.screens.HomeScreen
 import com.example.alphabetlauncher.ui.theme.AlphabetLauncherTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,7 +23,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AlphabetLauncherTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    com.example.alphabetlauncher.presentation.ui.screens.HomeScreen()
+                    HomeScreen()
                 }
             }
         }
