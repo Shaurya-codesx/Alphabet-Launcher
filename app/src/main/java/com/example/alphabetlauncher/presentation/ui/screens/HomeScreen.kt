@@ -27,6 +27,10 @@ fun HomeScreen(
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
 
+    androidx.activity.compose.BackHandler(enabled = state.selectedLetter != null) {
+        viewModel.clearSelection()
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -38,7 +42,7 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(end = 32.dp)
             ) {
-                if (!state.isDragging) {
+                if (state.selectedLetter == null) {
                     // Clock
                     ClockWidget(
                         modifier = Modifier

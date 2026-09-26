@@ -106,7 +106,7 @@ fun AlphabetBar(
 
                 Box(
                     modifier = Modifier
-                        .weight(1f) // Ensures perfectly even spacing and no cut-offs!
+                        .weight(1f)
                         .fillMaxWidth(),
                     contentAlignment = Alignment.CenterEnd
                 ) {
@@ -129,19 +129,6 @@ fun AlphabetBar(
 
         // Floating Letter Bubble (tracks the finger)
         if (isDragging && barHeight > 0) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .graphicsLayer {
-                        translationY = touchY - with(density) { 8.dp.toPx() }
-                        translationX = -with(density) { 16.dp.toPx() }
-                    }
-                    .size(16.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        shape = CircleShape
-                    )
-            )
             val itemHeight = barHeight / allItems.size
             val index = (touchY / itemHeight).toInt().coerceIn(0, allItems.lastIndex)
             val selectedText = allItems[index]

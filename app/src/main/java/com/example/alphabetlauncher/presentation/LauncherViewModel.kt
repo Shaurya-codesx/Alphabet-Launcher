@@ -45,10 +45,17 @@ class LauncherViewModel @Inject constructor(
     fun onDragEnded() {
         _state.update { 
             it.copy(
-                isDragging = false,
+                isDragging = false
+            ) 
+        }
+    }
+
+    fun clearSelection() {
+        _state.update {
+            it.copy(
                 selectedLetter = null,
                 filteredApps = emptyList()
-            ) 
+            )
         }
     }
 
